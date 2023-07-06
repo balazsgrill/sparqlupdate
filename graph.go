@@ -50,6 +50,28 @@ func (graph *Graph) AddTriple(subj rdf.Term, pred rdf.Term, obj rdf.Term) {
 	graph.addInternal(graph.serializeTerm(subj), graph.serializeTerm(pred), graph.serializeTerm(obj))
 }
 
+func (graph *Graph) ForEach(handle func(subject string, predicate string, object string)) {
+	graph.internalForEach(func(subject, predicate, object string) {
+		handle(convertToExternalValue(subject), convertToExternalValue(predicate), convertToExternalValue(object))
+	})
+}
+
+func convertToExternalValue(term string) string {
+	if strings.HasPrefix(term, "<") {
+		return strings.Trim(term, "<>")
+	}
+	iri, err := rdf.NewIRI(term)
+	if err == nil {
+		return iri.String()
+	}
+	lit, err := rdf.NewLiteral(term)
+	if err == nil {
+		return lit.String()
+	}
+
+	return term
+}
+
 func (graph *Graph) internalForEach(handle func(subject string, predicate string, object string)) {
 	for subject, predtoobj := range graph.data {
 		for predicate, objects := range predtoobj {
