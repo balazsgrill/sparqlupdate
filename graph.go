@@ -21,6 +21,16 @@ func New() *Graph {
 	}
 }
 
+func (graph *Graph) Length() int {
+	var triples int = 0
+	for _, predtoobj := range graph.data {
+		for _, objects := range predtoobj {
+			triples += len(objects)
+		}
+	}
+	return triples
+}
+
 func (graph *Graph) NewBlank() rdf.Term {
 	graph.blankcounter += 1
 	b, _ := rdf.NewBlank(fmt.Sprintf("%d", graph.blankcounter))
@@ -97,15 +107,15 @@ func (graph *Graph) Merge(other *Graph) {
 		return term
 	}
 	other.internalForEach(func(subject, predicate, object string) {
-		sterm, ok := graph.nodes[subject]
+		sterm, ok := other.nodes[subject]
 		if !ok {
 			return
 		}
-		pterm, ok := graph.nodes[predicate]
+		pterm, ok := other.nodes[predicate]
 		if !ok {
 			return
 		}
-		oterm, ok := graph.nodes[object]
+		oterm, ok := other.nodes[object]
 		if !ok {
 			return
 		}
